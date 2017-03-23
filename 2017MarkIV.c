@@ -46,7 +46,7 @@ int leftEncoderCurve (int target) {
 	return target*27.882;
 }
 
-int rightEncoerCurve (int target) {
+int rightEncoderCurve (int target) {
 	return target*23.093;
 }
 

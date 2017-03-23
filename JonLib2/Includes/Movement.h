@@ -3,8 +3,8 @@
 void setLeftWheelSpeed (int speed = 127);
 void setRightWheelSpeed (int speed = 127);
 
-int leftEncoderCurve (tSensors encoder);
-int rightEncoderCurve (tSensors encoder);
+int leftEncoderCurve (int target);
+int rightEncoderCurve (int target);
 
 void setWheelSpeed (int leftWheelSpeed = 127, int rightWheelSpeed = 127) {
 	setLeftWheelSpeed(leftWheelSpeed);
@@ -61,8 +61,8 @@ bool drivebasePIDAuto(drivebase *controller) {
 
 	do {
 		setWheelSpeed(
-			updatePIDController(leftEncoderCurve(left), controller->leftEncoder),
-			updatePIDController(leftEncoderCurve(right), controller->rightEncoder)
+			updatePIDController(left, controller->leftEncoder),
+			updatePIDController(right, controller->rightEncoder)
 		);
 
 		if(abs(left->error)>=left->threshold*THRESHOLD_COEFF || abs(right->error)>=right->threshold*THRESHOLD_COEFF)
@@ -81,8 +81,8 @@ bool drivebasePIDAuto(drivebase *controller) {
 
 //todo - make these timeout + return false
 void addDrivebaseTargetPID(drivebase *controller,  int leftTarget, int rightTarget) {
-	addTarget(controller->left, leftTarget);
-	addTarget(controller->right, rightTarget);
+	addTarget(controller->left, leftEncoderCurve(leftTarget));
+	addTarget(controller->right, rightEncoderCurve(rightTarget));
 }
 
 void addDrivebaseTargetPID(drivebase *controller, int target) {
@@ -99,8 +99,8 @@ bool addDrivebaseTargetPIDAuto(drivebase *controller, int target) {
 }
 
 void setDrivebaseTargetPID(drivebase *controller,  int leftTarget, int rightTarget) {
-	setTarget(controller->left, leftTarget);
-	setTarget(controller->right, rightTarget);
+	setTarget(controller->left, leftEncoderCurve(leftTarget));
+	setTarget(controller->right, rightEncoderCurve(rightTarget));
 }
 
 void setDrivebaseTargetPID(drivebase *controller, int target) {
