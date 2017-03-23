@@ -3,6 +3,9 @@
 void setLeftWheelSpeed (int speed = 127);
 void setRightWheelSpeed (int speed = 127);
 
+int leftEncoderCurve (tSensors encoder);
+int rightEncoderCurve (tSensors encoder);
+
 void setWheelSpeed (int leftWheelSpeed = 127, int rightWheelSpeed = 127) {
 	setLeftWheelSpeed(leftWheelSpeed);
 	setRightWheelSpeed(rightWheelSpeed);
@@ -58,8 +61,8 @@ bool drivebasePIDAuto(drivebase *controller) {
 
 	do {
 		setWheelSpeed(
-			updatePIDController(left, controller->leftEncoder),
-			updatePIDController(right, controller->rightEncoder)
+			updatePIDController(leftEncoderCurve(left), controller->leftEncoder),
+			updatePIDController(leftEncoderCurve(right), controller->rightEncoder)
 		);
 
 		if(abs(left->error)>=left->threshold*THRESHOLD_COEFF || abs(right->error)>=right->threshold*THRESHOLD_COEFF)

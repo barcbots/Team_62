@@ -42,6 +42,14 @@ void setRightWheelSpeed (int speed) {
 	motor[rightWheel2] = speed;
 }
 
+int leftEncoderCurve (int target) {
+	return target*27.882;
+}
+
+int rightEncoerCurve (int target) {
+	return target*23.093;
+}
+
 void lift (int power) {
 	motor[leftLift1] = power;
 	motor[leftLift2] = power;
