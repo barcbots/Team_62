@@ -11,9 +11,15 @@ typedef struct {
 	int lastError;
 	int integralLimit;
 	int threshold;
+	int slewRate;
+	int lastOutput;
 } pid;
 
-void initPIDController (pid *controller, float kP, float kI, float kD, int threshold = 10, int integralLimit = -1) {
+void clearIntegral(pid *controller) {
+	controller->integral = 0;
+}
+
+void initPIDController (pid *controller, float kP, float kI, float kD, int threshold = 10, int integralLimit = -1, int slewRate = 127) {
 	controller->kP = kP;
 	controller->kI = kI;
 	controller->kD = kD;
@@ -24,6 +30,8 @@ void initPIDController (pid *controller, float kP, float kI, float kD, int thres
 	controller->lastError = 0;
 	controller->threshold = threshold;
 	controller->integralLimit = integralLimit;
+	controller->slewRate = slewRate;
+	controller->lastOutput = 0;
 }
 
 float updatePIDController (pid *controller, tSensors sensor) {
@@ -39,14 +47,18 @@ float updatePIDController (pid *controller, tSensors sensor) {
 	controller->derivative = controller->error - controller->lastError;
 	controller->lastError = controller->error;
 
-	return controller->kP*controller->error + controller->kI*controller->integral + controller->kD*controller->derivative;
+	int output = slew(controller->kP*controller->error + controller->kI*controller->integral + controller->kD*controller->derivative,controller->lastOutput, controller->slewRate);
+	controller->lastOutput = output;
+	return output;
 }
 
 void addTarget(pid *controller, int target) {
+	clearIntegral(controller);
 	controller->target = controller->target+target;
 }
 
 void setTarget(pid *controller, int target) {
+	clearIntegral(controller);
 	controller->target = target;
 }
 
@@ -56,10 +68,6 @@ void setThreshold(pid *controller, int threshold) {
 
 void setIntegralLimit(pid *controller, int integralLimit) {
 	controller->integralLimit = integralLimit;
-}
-
-void clearIntegral(pid *controller) {
-	controller->integral = 0;
 }
 
 void resetSensor (tSensors sensor, int times) {

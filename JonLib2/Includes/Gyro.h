@@ -5,9 +5,9 @@ typedef struct {
 	tSensors sensor;
 } gyroscope;
 
-void initPIDGyroscope (gyroscope *gyroController, tSensors sensor, float kP,  float kI, float kD, int threshold = 10, int integralLimit = -1) {
+void initPIDGyroscope (gyroscope *gyroController, tSensors sensor, float kP,  float kI, float kD, int threshold = 10, int integralLimit = -1, int slewRate = 10) {
 	pid *controller = gyroController->controller;
-	initPIDController(controller, kP, kI, kD, threshold, integralLimit);
+	initPIDController(controller, kP, kI, kD, threshold, integralLimit, slewRate);
 	gyroController->sensor = sensor;
 }
 
@@ -65,16 +65,20 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 	do {
 		spin(updatePIDController(controller, gyroController->sensor));
 
-		if(abs(controller->error)>controller->threshold*THRESHOLD_COEFF)
+		if(abs(controller->error)<=(abs(controller->lastError)-20))
 			lastUpdate = nPgmTime;
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
+			writeDebugStreamLine("TIMEOUT");
 			return false;
 		}
 
+		if(abs(controller->error)>controller->threshold)
+			clearTimer(T4);
+
 		delay(25);
-	} while(abs(controller->error)>controller->threshold);
+	} while(time1[T4]<100);
 
 	setWheelSpeed(0);
 	return true;
@@ -82,6 +86,7 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 
 void setGyroTargetPID (gyroscope *gyroController, float target) {
 	pid *controller = gyroController->controller;
+	clearIntegral(controller);
 	controller->target = target;
 }
 
@@ -102,6 +107,7 @@ void setGyroTargetPIDAutoLeftSwingTurn (gyroscope *gyroController, float target)
 
 void addGyroTargetPID (gyroscope *gyroController, float target) {
 	pid *controller = gyroController->controller;
+	clearIntegral(controller);
 	controller->target = controller->target + target;
 }
 

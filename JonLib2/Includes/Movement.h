@@ -40,9 +40,9 @@ typedef struct {
 	tSensors rightEncoder;
 } drivebase;
 
-void initPIDDrivebase (drivebase *controller, tSensors leftEncoder, tSensors rightEncoder, float kP,  float kI, float kD, int threshold = 10, int integralLimit = -1) {
-	initPIDController(controller->left,  kP, kI, kD, threshold, integralLimit);
-	initPIDController(controller->right, kP, kI, kD, threshold,  integralLimit);
+void initPIDDrivebase (drivebase *controller, tSensors leftEncoder, tSensors rightEncoder, float kP,  float kI, float kD, int threshold = 10, int integralLimit = -1, int slewRate = 10) {
+	initPIDController(controller->left,  kP, kI, kD, threshold, integralLimit, slewRate);
+	initPIDController(controller->right, kP, kI, kD, threshold,  integralLimit, slewRate);
 	controller->leftEncoder = leftEncoder;
 	controller->rightEncoder = rightEncoder;
 }
