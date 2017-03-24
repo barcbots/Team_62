@@ -91,11 +91,10 @@ task motorPortTest() {
 
 void pre_auton() { }
 
-
-drivebase db;
 task autonomous () {
 	clearDebugStream();
 	gyroscope g;
+	drivebase db;
 	resetSensor(leftEnc);
 	resetSensor(rightEnc);
 	resetSensor(gyro); //.17, .5
@@ -121,7 +120,6 @@ task autonomous () {
 }
 
 task usercontrol() {
-	startTask(calculateLiftOffset);
 	while(true) {
 		tankDrive(vexRT[Ch3], vexRT[Ch2], 10);
 
