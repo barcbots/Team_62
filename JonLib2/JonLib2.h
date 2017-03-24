@@ -2,14 +2,6 @@
 
 #pragma platform(VEX2)
 #pragma competitionControl(competition)
-#warning "       __            __    _ __   ___ "
-#warning "      / /___  ____  / /   (_) /_ |__ \\"
-#warning " __  / / __ \\/ __ \\/ /   / / __ \\__/ /"
-#warning "/ /_/ / /_/ / / / / /___/ / /_/ / __/ "
-#warning "\\____/\\____/_/ /_/_____/_/_.___/____/ "
-
-
-
 
 #include "Includes/VEX_Competition_Includes_JON.c"
 
@@ -20,3 +12,9 @@
 #include "Includes/PID.h"
 #include "Includes/Movement.h"
 #include "Includes/Gyro.h"
+
+#warning "       __            __    _ __   ___ "
+#warning "      / /___  ____  / /   (_) /_ |__ \\"
+#warning " __  / / __ \\/ __ \\/ /   / / __ \\__/ /"
+#warning "/ /_/ / /_/ / / / / /___/ / /_/ / __/ "
+#warning "\\____/\\____/_/ /_/_____/_/_.___/____/ "

@@ -1,3 +1,6 @@
+#pragma systemFile
+#warning "JonLib2: Math"
+
 int slew (int value, int lastValue,  int slewRate) {
 	if(abs(value-lastValue)>slewRate) {
 		if(lastValue>value)

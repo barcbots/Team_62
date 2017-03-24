@@ -1,4 +1,5 @@
 #pragma systemFile
+#warning "JonLib2: Gyro"
 
 typedef struct {
 	pid controller;
