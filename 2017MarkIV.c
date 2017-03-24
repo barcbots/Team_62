@@ -18,47 +18,62 @@
 
 #include "JonLib2/JonLib2.h"
 
-#define LIFT_DOWN 3200
-int liftOffset = 0;
-task calculateLiftOffset() {
-	while(true) {
-		if(SensorValue[liftStop])
-			liftOffset = SensorValue[liftPot]-LIFT_DOWN;
-		endTimeSlice();
-	}
-}
+/*///////////////////////////////////////////////////////////
+/////____________/\\\\\____/\\\\\\\\\_____              /////
+///// ________/\\\\////___/\\\///////\\\___             /////
+/////  _____/\\\///_______\///______\//\\\__            /////
+/////   ___/\\\\\\\\\\\______________/\\\/___           /////
+/////    __/\\\\///////\\\_________/\\\//_____          /////
+/////     _\/\\\______\//\\\_____/\\\//________         /////
+/////      _\//\\\______/\\\____/\\\/___________        /////
+/////       __\///\\\\\\\\\/____/\\\\\\\\\\\\\\\_       /////
+/////        ____\/////////_____\///////////////__      /////
+///// 2017 Mark V Robot                                     /////
+///// Main Code                                         /////
+///// Authors: Jonathan Damico (jj_damico@yahoo.com)    /////
+///// Since: March 24, 2017                             /////
+*////////////////////////////////////////////////////////////
 
-int getLiftPot () {
-	return SensorValue[liftPot] + liftOffset;
-}
-
+//required by JonLib2
+//sets speed of left wheels on robot
 void setLeftWheelSpeed (int speed) {
 	motor[leftWheel1] = speed;
 	motor[leftWheel2] = speed;
 }
 
+//required by JonLib2
+//sets speed of right wheels on robot
 void setRightWheelSpeed (int speed) {
 	motor[rightWheel1] = speed;
 	motor[rightWheel2] = speed;
 }
 
+//required by JonLib2
+//takes number of inches for the robot to travel
+//returns encoder ticks for left drivebase to reach that distance
 int leftEncoderCurve (int target) {
 	return target*27.882;
 }
 
+
+//required by JonLib2
+//takes number of inches for robot to travel
+//returns encoder ticks for right drivebase to reach that distance
 int rightEncoderCurve (int target) {
 	return target*23.093;
 }
 
+//sets all lift motors to power
 void lift (int power) {
-	motor[leftLift1] = power;
-	motor[leftLift2] = power;
-	motor[leftLift3] = power;
+	motor[leftLift1]  = power;
 	motor[rightLift1] = power;
+	motor[leftLift2]  = power;
 	motor[rightLift2] = power;
+	motor[leftLift3]  = power;
 	motor[rightLift3] = power;
 }
 
+//task to test all motors with differient button inputs
 task motorPortTest() {
 	while(true) {
 		motor[port1] 	= vexRT(Btn7U)*127; //rightWheel1
