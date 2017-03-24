@@ -16,42 +16,56 @@ bool leftSwingTurnGyroPID (gyroscope *gyroController) {
 
 	long lastUpdate = nPgmTime;
 
-	do {
-		setLeftWheelSpeed(updatePIDController(controller, gyroController->sensor));
+	setRightWheelSpeed(0);
 
-		if(abs(controller->error)>controller->threshold*THRESHOLD_COEFF)
+	do {
+		setLeftWheelSpeed(-updatePIDController(controller, gyroController->sensor));
+
+		if(abs(controller->error)<=(abs(controller->lastError)-20))
 			lastUpdate = nPgmTime;
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
+			writeDebugStreamLine("TIMEOUT");
 			return false;
 		}
 
+		if(abs(controller->error)>controller->threshold)
+			clearTimer(T4);
+
 		delay(25);
-	} while(abs(controller->error)>controller->threshold);
+
+	} while(time1[T4]<100);
 
 	setWheelSpeed(0);
 	return true;
 }
 
 bool rightSwingTurnGyroPID (gyroscope *gyroController) {
-	pid *controller = gyroController->controller;
+pid *controller = gyroController->controller;
 
 	long lastUpdate = nPgmTime;
+
+	setLeftWheelSpeed(0);
 
 	do {
 		setRightWheelSpeed(updatePIDController(controller, gyroController->sensor));
 
-		if(abs(controller->error)>controller->threshold*THRESHOLD_COEFF)
+		if(abs(controller->error)<=(abs(controller->lastError)-20))
 			lastUpdate = nPgmTime;
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
+			writeDebugStreamLine("TIMEOUT");
 			return false;
 		}
 
+		if(abs(controller->error)>controller->threshold)
+			clearTimer(T4);
+
 		delay(25);
-	} while(abs(controller->error)>controller->threshold);
+
+	} while(time1[T4]<100);
 
 	setWheelSpeed(0);
 	return true;

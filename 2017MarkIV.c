@@ -1,5 +1,5 @@
 #pragma config(Sensor, in1,    liftPot,        sensorPotentiometer)
-#pragma config(Sensor, in2,    gyro,           sensorGyro)
+#pragma config(Sensor, in8,    gyro,           sensorGyro)
 #pragma config(Sensor, dgtl1,  rightEnc,       sensorQuadEncoder)
 #pragma config(Sensor, dgtl3,  leftEnc,        sensorQuadEncoder)
 #pragma config(Sensor, dgtl6,  claw,           sensorDigitalOut)
@@ -77,29 +77,32 @@ task motorPortTest() {
 void pre_auton() { }
 
 
-	drivebase db;
+drivebase db;
 task autonomous () {
 	clearDebugStream();
 	gyroscope g;
 	resetSensor(leftEnc);
 	resetSensor(rightEnc);
 	resetSensor(gyro); //.17, .5
-	//initPIDGyroscope(g, gyro, 0.3, 0.0001, 0.7, 30, -1, 40);
-	//addGyroTargetPIDAutoPointTurn(g, 200);
-	//setWheelSpeed(0);
-	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.2, 0.0, 0.7, 30, -1, 20, 0.1);
-	int targets[5];
-	targets[0] = 48;
-	targets[1] = 0;
-	targets[2] = 12;
-	targets[3] = 36;
-	targets[4] = 0;
 
-	for(int i = 0; i<5; i++) {
-		writeDebugStream("INTENDED: (%d, %d) ", leftEncoderCurve(targets[i]), rightEncoderCurve(targets[i]));
-		setDrivebaseTargetPIDAuto(db, targets[i]);
-		writeDebugStreamLine("ACT: (%d,%d)", SensorValue[leftEnc],SensorValue[rightEnc]);
-	}
+	initPIDGyroscope(g, gyro, 0.25, 0.0001, 0.7, 30, -1, 40);
+	addGyroTargetPIDAutoLeftSwingTurn(g, 500);
+	setWheelSpeed(0);
+
+	//initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.15, 0.0001, 0.7, 30, -1, 20, 0.5);
+	//int targets[5];
+	//targets[0] = 48;
+	//targets[1] = 0;
+	//targets[2] = 12;
+	//targets[3] = 36;
+	//targets[4] = 0;
+
+	//for(int i = 0; i<5; i++)
+	//	writeDebugStream("INTENDED: (%d, %d) ", leftEncoderCurve(targets[i]), rightEncoderCurve(targets[i]));
+	//	setDrivebaseTargetPIDAuto(db, targets[i]);
+	//	writeDebugStreamLine("ACT: (%d,%d)", SensorValue[leftEnc],SensorValue[rightEnc]);
+	//	delay(200);
+	//}
 }
 
 task usercontrol() {
@@ -112,18 +115,18 @@ task usercontrol() {
 		else if(vexRT[Btn5U])
 			lift(127);
 		else if(vexRT[Btn5D] && !SensorValue[liftStop]) {
-			if(SensorValue[liftPot]>1000)
+			if(SensorValue[liftPot]<1450)
 				lift(-127);
-			else if(SensorValue[liftPot]<1600)
+			else if(SensorValue[liftPot]>2400)
 				lift(-40);
 			else
 				lift(-80);
 		}
 		else if(SensorValue[liftStop]) //hold down code
 			lift(-15);
-		else if(SensorValue[liftPot]>2300)
+		else if(SensorValue[liftPot]<1300)
 			lift(-20);
-		else if(SensorValue[liftPot]<1400)
+		else if(SensorValue[liftPot]>2200)
 			lift(15);
 		else
 			lift(0);

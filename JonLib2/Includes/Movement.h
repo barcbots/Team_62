@@ -106,7 +106,7 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 
 		delay(25);
 
-	} while(time1[T4]<100);
+	} while(time1[T4]<150);
 
 	setWheelSpeed(0);
 	return true;
