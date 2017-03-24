@@ -76,20 +76,30 @@ task motorPortTest() {
 
 void pre_auton() { }
 
+
+	drivebase db;
 task autonomous () {
 	clearDebugStream();
-	drivebase db;
 	gyroscope g;
 	resetSensor(leftEnc);
 	resetSensor(rightEnc);
 	resetSensor(gyro); //.17, .5
 	//initPIDGyroscope(g, gyro, 0.3, 0.0001, 0.7, 30, -1, 40);
-	////addGyroTargetPIDAutoPointTurn(g, 1000);
+	//addGyroTargetPIDAutoPointTurn(g, 200);
 	//setWheelSpeed(0);
-	//initPIDDrivebase(db, leftEnc, rightEnc, 0.2, 0.0, 0.0);
-	//addDrivebaseTargetPIDAuto(db, 1000);
-	//setDrivebaseTargetPIDAuto(db, 0);
-	//setWheelSpeed(0);
+	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.2, 0.0, 0.7, 30, -1, 20, 0.1);
+	int targets[5];
+	targets[0] = 48;
+	targets[1] = 0;
+	targets[2] = 12;
+	targets[3] = 36;
+	targets[4] = 0;
+
+	for(int i = 0; i<5; i++) {
+		writeDebugStream("INTENDED: (%d, %d) ", leftEncoderCurve(targets[i]), rightEncoderCurve(targets[i]));
+		setDrivebaseTargetPIDAuto(db, targets[i]);
+		writeDebugStreamLine("ACT: (%d,%d)", SensorValue[leftEnc],SensorValue[rightEnc]);
+	}
 }
 
 task usercontrol() {
@@ -102,7 +112,7 @@ task usercontrol() {
 		else if(vexRT[Btn5U])
 			lift(127);
 		else if(vexRT[Btn5D] && !SensorValue[liftStop]) {
-			if(SensorValue[liftPot]>2100)
+			if(SensorValue[liftPot]>1000)
 				lift(-127);
 			else if(SensorValue[liftPot]<1600)
 				lift(-40);
@@ -114,7 +124,7 @@ task usercontrol() {
 		else if(SensorValue[liftPot]>2300)
 			lift(-20);
 		else if(SensorValue[liftPot]<1400)
-			lift(10);
+			lift(15);
 		else
 			lift(0);
 

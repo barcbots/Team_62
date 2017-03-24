@@ -78,6 +78,7 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 			clearTimer(T4);
 
 		delay(25);
+
 	} while(time1[T4]<100);
 
 	setWheelSpeed(0);

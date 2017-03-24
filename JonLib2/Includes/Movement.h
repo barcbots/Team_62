@@ -41,6 +41,8 @@ typedef struct {
 	pid right;
 	tSensors leftEncoder;
 	tSensors rightEncoder;
+	tSensors gyroscope;
+	float gyroP;
 } drivebase;
 
 void initPIDDrivebase (drivebase *controller, tSensors leftEncoder, tSensors rightEncoder, float kP,  float kI, float kD, int threshold = 10, int integralLimit = -1, int slewRate = 10) {
@@ -48,9 +50,20 @@ void initPIDDrivebase (drivebase *controller, tSensors leftEncoder, tSensors rig
 	initPIDController(controller->right, kP, kI, kD, threshold,  integralLimit, slewRate);
 	controller->leftEncoder = leftEncoder;
 	controller->rightEncoder = rightEncoder;
+	controller->gyroP = 0.0;
 }
 
-bool drivebasePIDAuto(drivebase *controller) {
+void initPIDDrivebase (drivebase *controller, tSensors leftEncoder, tSensors rightEncoder, tSensors gyroscope, float kP,  float kI, float kD, int threshold = 10, int integralLimit = -1, int slewRate = 10, float gyroP = 0.0) {
+	initPIDDrivebase(controller,  leftEncoder,  rightEncoder,  kP,  kI, kD, threshold, integralLimit, slewRate);
+	controller->gyroscope = gyroscope;
+	controller->gyroP =  gyroP;
+}
+
+int getGyroCrossTrackError(drivebase *controller, int target) {
+	return (target - SensorValue[controller->gyroscope])*controller->gyroP;
+}
+
+bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 	long lastUpdate = nPgmTime;
 
 	pid *left = controller->left;
@@ -59,22 +72,42 @@ bool drivebasePIDAuto(drivebase *controller) {
 	clearIntegral(left);
 	clearIntegral(right);
 
+	int gyroTarget;
+	if(controller->gyroP!=0) {
+		gyroTarget = SensorValue[controller->gyroscope];
+		writeDebugStream("GYRO USED ");
+	}
+
 	do {
-		setWheelSpeed(
-			updatePIDController(left, controller->leftEncoder),
-			updatePIDController(right, controller->rightEncoder)
-		);
+		if(controller->gyroP!=0.0) {
+			int gyroSway = getGyroCrossTrackError(controller, gyroTarget);
+			setWheelSpeed(
+				updatePIDController(left, controller->leftEncoder)-gyroSway,
+				updatePIDController(right,  controller->rightEncoder)+gyroSway
+			);
+		} else {
+			setWheelSpeed(
+				updatePIDController(left, controller->leftEncoder),
+				updatePIDController(right, controller->rightEncoder)
+			);
+		}
 
 		if(abs(left->error)>=left->threshold*THRESHOLD_COEFF || abs(right->error)>=right->threshold*THRESHOLD_COEFF)
 			lastUpdate = nPgmTime;
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
+			writeDebugStream("TIMEOUT ");
 			return false;
 		}
 
+		if(abs(left->error)>=left->threshold || abs(right->error)>=right->threshold)
+			clearTimer(T4);
+
 		delay(25);
-	} while(abs(left->error)>=left->threshold || abs(right->error)>=right->threshold);
+
+	} while(time1[T4]<100);
+
 	setWheelSpeed(0);
 	return true;
 }
@@ -91,7 +124,7 @@ void addDrivebaseTargetPID(drivebase *controller, int target) {
 
 bool addDrivebaseTargetPIDAuto(drivebase *controller, int leftTarget, int rightTarget) {
 	addDrivebaseTargetPID(controller, leftTarget, rightTarget);
-	return drivebasePIDAuto(controller);
+	return drivebasePIDAuto(controller, leftTarget==rightTarget);
 }
 
 bool addDrivebaseTargetPIDAuto(drivebase *controller, int target) {
@@ -109,7 +142,7 @@ void setDrivebaseTargetPID(drivebase *controller, int target) {
 
 bool setDrivebaseTargetPIDAuto(drivebase *controller, int leftTarget, int rightTarget) {
 	setDrivebaseTargetPID(controller, leftTarget, rightTarget);
-	return drivebasePIDAuto(controller);
+	return drivebasePIDAuto(controller, leftTarget==rightTarget);
 }
 
 bool setDrivebaseTargetPIDAuto(drivebase *controller, int target) {
