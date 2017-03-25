@@ -79,8 +79,10 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 		writeDebugStream("GYRO USED ");
 	}
 
+	writeDebugStream("INTENDED: (%d, %d) ", left->target, right->target);
+
 	do {
-		if(controller->gyroP!=0.0) {
+		if(useGyro) {
 			int gyroSway = getGyroCrossTrackError(controller, gyroTarget);
 			setWheelSpeed(
 				updatePIDController(left, controller->leftEncoder)-gyroSway,
@@ -93,12 +95,15 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 			);
 		}
 
-		if(abs(left->error)>=left->threshold*THRESHOLD_COEFF || abs(right->error)>=right->threshold*THRESHOLD_COEFF)
+		if(abs(left->error)<=(abs(left->lastError)-20)){
 			lastUpdate = nPgmTime;
+			writeDebugStreamLine("UPDATED");
+		}
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
 			writeDebugStream("TIMEOUT ");
+			writeDebugStreamLine("ACT: (%d,%d)", SensorValue[controller->leftEncoder],SensorValue[controller->rightEncoder]);
 			return false;
 		}
 
@@ -110,6 +115,7 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 	} while(time1[T4]<150);
 
 	setWheelSpeed(0);
+	writeDebugStreamLine("ACT: (%d,%d)", SensorValue[controller->leftEncoder],SensorValue[controller->rightEncoder]);
 	return true;
 }
 
