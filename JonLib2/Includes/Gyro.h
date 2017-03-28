@@ -1,6 +1,8 @@
 #pragma systemFile
 #warning "JonLib2: Gyro"
 
+int gyroCurve (int target);
+
 typedef struct {
 	pid controller;
 	tSensors sensor;
@@ -112,7 +114,7 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 void setGyroTargetPID (gyroscope *gyroController, float target) {
 	pid *controller = gyroController->controller;
 	clearIntegral(controller);
-	controller->target = target;
+	controller->target = gyroCurve(target);
 }
 
 void setGyroTargetPIDAutoPointTurn (gyroscope *gyroController, float target) {
@@ -133,7 +135,7 @@ void setGyroTargetPIDAutoLeftSwingTurn (gyroscope *gyroController, float target)
 void addGyroTargetPID (gyroscope *gyroController, float target) {
 	pid *controller = gyroController->controller;
 	clearIntegral(controller);
-	controller->target = controller->target + target;
+	controller->target = controller->target + gyroCurve(target);
 }
 
 void addGyroTargetPIDAutoPointTurn (gyroscope *gyroController, float target) {
