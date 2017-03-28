@@ -80,7 +80,7 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 	writeDebugStream("INTENDED: (%d, %d) ", left->target, right->target);
 
 	long lastUpdate = nPgmTime;
-	int lastLeftError = -1, lastLeftError = -1;
+	int lastLeftError = -1, lastRightError = -1;
 
 	do {
 		if(useGyro) {
