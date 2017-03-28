@@ -50,22 +50,22 @@ void setRightWheelSpeed (int speed) {
 
 //required by JonLib2
 //takes number of inches for the robot to travel
-//returns encoder ticks for left drivebase to reach that distance
-int leftEncoderCurve (int target) {
+//returns encoder ticks for right drivebase to reach that distance
+int rightEncoderCurve (int target) {
 	return 27.882*target;
 }
 
 //required by JonLib2
 //takes number of inches for robot to travel
-//returns encoder ticks for right drivebase to reach that distance
-//90 degrees is a right turn
-int rightEncoderCurve (int target) {
+//returns encoder ticks for left drivebase to reach that distance
+int leftEncoderCurve (int target) {
 	return 23.093*target;
 }
 
 //required by JonLib2
 //takes degrees for robot to travel
 //returns gyro value for degrees
+//90 degrees is a right turn
 int gyroCurve (int target) {
 	return -10.783*target;
 }
@@ -108,7 +108,7 @@ void autonomousTest () {
 	resetSensor(gyro); //.17, .5
 
 	initPIDGyroscope(g, gyro, 0.25, 0.0001, 0.7, 30, -1, 40);
-	//addGyroTargetPIDAutoLeftSwingTurn(g, 1000);
+	//addGyroTargetPIDAutoPointTurn(g, 180);
 	//setWheelSpeed(0);
 
 	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.15, 0.0001, 0.7, 30, -1, 20, 0.3);
