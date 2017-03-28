@@ -52,23 +52,22 @@ void setRightWheelSpeed (int speed) {
 //takes number of inches for the robot to travel
 //returns encoder ticks for left drivebase to reach that distance
 int leftEncoderCurve (int target) {
-	return target*27.882;
+	return 27.882*target*;
 }
-
-//required by JonLib2
-//takes degrees for robot to travel
-//returns gyro value for degrees
-int gyroCurve (int target) {
-	return -1;
-}
-
 
 //required by JonLib2
 //takes number of inches for robot to travel
 //returns encoder ticks for right drivebase to reach that distance
 //90 degrees is a right turn
 int rightEncoderCurve (int target) {
-	return target*23.093;
+	return 23.093*target;
+}
+
+//required by JonLib2
+//takes degrees for robot to travel
+//returns gyro value for degrees
+int gyroCurve (int target) {
+	return -10.783*target;
 }
 
 //sets all lift motors to power
