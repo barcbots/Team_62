@@ -52,7 +52,7 @@ void setRightWheelSpeed (int speed) {
 //takes number of inches for the robot to travel
 //returns encoder ticks for left drivebase to reach that distance
 int leftEncoderCurve (int target) {
-	return 27.882*target*;
+	return 27.882*target;
 }
 
 //required by JonLib2
