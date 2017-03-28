@@ -16,14 +16,17 @@ bool leftSwingTurnGyroPID (gyroscope *gyroController) {
 	pid *controller = gyroController->controller;
 
 	long lastUpdate = nPgmTime;
+	int lastError = -1;
 
 	setRightWheelSpeed(0);
 
 	do {
 		setLeftWheelSpeed(-updatePIDController(controller, gyroController->sensor));
 
-		if(abs(controller->error)<=(abs(controller->lastError)-20))
+		if(abs(controller->error)<=(abs(lastError)-5))
 			lastUpdate = nPgmTime;
+
+		lastError = controller->error;
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
@@ -46,14 +49,17 @@ bool rightSwingTurnGyroPID (gyroscope *gyroController) {
 pid *controller = gyroController->controller;
 
 	long lastUpdate = nPgmTime;
+	int lastError = -1;
 
 	setLeftWheelSpeed(0);
 
 	do {
 		setRightWheelSpeed(updatePIDController(controller, gyroController->sensor));
 
-		if(abs(controller->error)<=(abs(controller->lastError)-20))
+		if(abs(controller->error)<=(abs(lastError)-5))
 			lastUpdate = nPgmTime;
+
+		lastError = controller->error;
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
@@ -76,12 +82,15 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 	pid *controller = gyroController->controller;
 
 	long lastUpdate = nPgmTime;
+	int lastError = -1;
 
 	do {
 		spin(updatePIDController(controller, gyroController->sensor));
 
-		if(abs(controller->error)<=(abs(controller->lastError)-20))
+		if(abs(controller->error)<=(abs(lastError)-5))
 			lastUpdate = nPgmTime;
+
+		lastError = controller->error;
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);

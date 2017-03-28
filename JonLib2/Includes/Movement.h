@@ -65,8 +65,6 @@ int getGyroCrossTrackError(drivebase *controller, int target) {
 }
 
 bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
-	long lastUpdate = nPgmTime;
-
 	pid *left = controller->left;
 	pid *right = controller->right;
 
@@ -80,6 +78,9 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 	}
 
 	writeDebugStream("INTENDED: (%d, %d) ", left->target, right->target);
+
+	long lastUpdate = nPgmTime;
+	int lastLeftError = -1, lastLeftError = -1;
 
 	do {
 		if(useGyro) {
@@ -95,10 +96,18 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 			);
 		}
 
-		if(abs(left->error)<=(abs(left->lastError)-20)){
+		if(abs(left->error)<=(abs(lastLeftError)-5)){
 			lastUpdate = nPgmTime;
 			writeDebugStreamLine("UPDATED");
 		}
+
+		if(abs(right->error)<=(abs(lastRightError)-5)){
+			lastUpdate = nPgmTime;
+			writeDebugStreamLine("UPDATED");
+		}
+
+		lastLeftError = left->error;
+		lastRightError = right->error;
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
@@ -149,7 +158,7 @@ void setDrivebaseTargetPID(drivebase *controller, int target) {
 
 bool setDrivebaseTargetPIDAuto(drivebase *controller, int leftTarget, int rightTarget) {
 	setDrivebaseTargetPID(controller, leftTarget, rightTarget);
-	return drivebasePIDAuto(controller, leftTarget==rightTarget);
+	return drivebasePIDAuto(controller, false);
 }
 
 bool setDrivebaseTargetPIDAuto(drivebase *controller, int target) {
