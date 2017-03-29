@@ -20,6 +20,8 @@ bool leftSwingTurnGyroPID (gyroscope *gyroController) {
 	long lastUpdate = nPgmTime;
 	int lastError = -1;
 
+	writeDebugStream("INTENDED: (%d) ", controller->target);
+
 	setRightWheelSpeed(0);
 
 	do {
@@ -32,7 +34,8 @@ bool leftSwingTurnGyroPID (gyroscope *gyroController) {
 
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
-			writeDebugStreamLine("TIMEOUT");
+			writeDebugStream("TIMEOUT ");
+			writeDebugStreamLine("ACT: (%d)", SensorValue[gyroController->sensor]);
 			return false;
 		}
 
@@ -44,6 +47,8 @@ bool leftSwingTurnGyroPID (gyroscope *gyroController) {
 	} while(time1[T4]<100);
 
 	setWheelSpeed(0);
+
+	writeDebugStreamLine("ACT: (%d)", SensorValue[gyroController->sensor]);
 	return true;
 }
 
@@ -52,6 +57,8 @@ pid *controller = gyroController->controller;
 
 	long lastUpdate = nPgmTime;
 	int lastError = -1;
+
+	writeDebugStream("INTENDED: (%d) ", controller->target);
 
 	setLeftWheelSpeed(0);
 
@@ -66,6 +73,7 @@ pid *controller = gyroController->controller;
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
 			writeDebugStreamLine("TIMEOUT");
+			writeDebugStreamLine("ACT: (%d)", SensorValue[gyroController->sensor]);
 			return false;
 		}
 
@@ -77,6 +85,8 @@ pid *controller = gyroController->controller;
 	} while(time1[T4]<100);
 
 	setWheelSpeed(0);
+
+	writeDebugStreamLine("ACT: (%d)", SensorValue[gyroController->sensor]);
 	return true;
 }
 
@@ -85,6 +95,8 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 
 	long lastUpdate = nPgmTime;
 	int lastError = -1;
+
+	writeDebugStream("INTENDED: (%d) ", controller->target);
 
 	do {
 		spin(updatePIDController(controller, gyroController->sensor));
@@ -97,6 +109,7 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 		if((nPgmTime-lastUpdate)>MOVE_TIMEOUT) {
 			setWheelSpeed(0);
 			writeDebugStreamLine("TIMEOUT");
+			writeDebugStreamLine("ACT: (%d)", SensorValue[gyroController->sensor]);
 			return false;
 		}
 
@@ -108,6 +121,8 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 	} while(time1[T4]<100);
 
 	setWheelSpeed(0);
+
+	writeDebugStreamLine("ACT: (%d)", SensorValue[gyroController->sensor]);
 	return true;
 }
 
