@@ -226,7 +226,7 @@ void programmingSkils () {
 	close();
 	delay(500);
 	setLiftTarget(LIFT_RAISE);
-	setDrivebaseTargetPIDAuto(db, 12,11);
+	setDrivebaseTargetPIDAuto(db, 12, 11, 70);
 
 	setGyroTargetPIDAutoRightSwingTurn(gLoad, 90);
 	delay(300);

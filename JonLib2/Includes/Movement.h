@@ -44,6 +44,7 @@ typedef struct {
 	tSensors rightEncoder;
 	tSensors gyroscope;
 	float gyroP;
+	int maxSpeed;
 } drivebase;
 
 void initPIDDrivebase (drivebase *controller, tSensors leftEncoder, tSensors rightEncoder, float kP,  float kI, float kD, int threshold = 10, int integralLimit = -1, int slewRate = 10) {
@@ -86,13 +87,13 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 		if(useGyro) {
 			int gyroSway = getGyroCrossTrackError(controller, gyroTarget);
 			setWheelSpeed(
-				updatePIDController(left, controller->leftEncoder)-gyroSway,
-				updatePIDController(right,  controller->rightEncoder)+gyroSway
+				limit(updatePIDController(left, controller->leftEncoder)-gyroSway, controller->maxSpeed),
+				limit(updatePIDController(right,  controller->rightEncoder)+gyroSway, controller->maxSpeed)
 			);
 		} else {
 			setWheelSpeed(
-				updatePIDController(left, controller->leftEncoder),
-				updatePIDController(right, controller->rightEncoder)
+				limit(updatePIDController(left, controller->leftEncoder), controller->maxSpeed),
+				limit(updatePIDController(right, controller->rightEncoder), controller->maxSpeed)
 			);
 		}
 
@@ -127,7 +128,8 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 }
 
 //todo - make these timeout + return false
-void addDrivebaseTargetPID(drivebase *controller,  int leftTarget, int rightTarget) {
+void addDrivebaseTargetPID(drivebase *controller,  int leftTarget, int rightTarget, int maxSpeed = 127) {
+	controller->maxSpeed = maxSpeed;
 	addTarget(controller->left, leftEncoderCurve(leftTarget));
 	addTarget(controller->right, rightEncoderCurve(rightTarget));
 }
@@ -136,8 +138,8 @@ void addDrivebaseTargetPID(drivebase *controller, int target) {
 	addDrivebaseTargetPID(controller, target, target);
 }
 
-bool addDrivebaseTargetPIDAuto(drivebase *controller, int leftTarget, int rightTarget) {
-	addDrivebaseTargetPID(controller, leftTarget, rightTarget);
+bool addDrivebaseTargetPIDAuto(drivebase *controller, int leftTarget, int rightTarget, int maxSpeed = 127) {
+	addDrivebaseTargetPID(controller, leftTarget, rightTarget, maxSpeed);
 	return drivebasePIDAuto(controller, leftTarget==rightTarget);
 }
 
@@ -145,7 +147,8 @@ bool addDrivebaseTargetPIDAuto(drivebase *controller, int target) {
 	return addDrivebaseTargetPIDAuto(controller, target, target);
 }
 
-void setDrivebaseTargetPID(drivebase *controller,  int leftTarget, int rightTarget) {
+void setDrivebaseTargetPID(drivebase *controller,  int leftTarget, int rightTarget, int maxSpeed = 127) {
+	controller->maxSpeed = maxSpeed;
 	setTarget(controller->left, leftEncoderCurve(leftTarget));
 	setTarget(controller->right, rightEncoderCurve(rightTarget));
 }
@@ -154,8 +157,8 @@ void setDrivebaseTargetPID(drivebase *controller, int target) {
 	setDrivebaseTargetPID(controller, target, target);
 }
 
-bool setDrivebaseTargetPIDAuto(drivebase *controller, int leftTarget, int rightTarget) {
-	setDrivebaseTargetPID(controller, leftTarget, rightTarget);
+bool setDrivebaseTargetPIDAuto(drivebase *controller, int leftTarget, int rightTarget, int maxSpeed = 127) {
+	setDrivebaseTargetPID(controller, leftTarget, rightTarget, maxSpeed);
 	return drivebasePIDAuto(controller, false);
 }
 
