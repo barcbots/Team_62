@@ -238,8 +238,8 @@ void programmingSkils () {
 	while(SensorValue[liftPot]<LIFT_DUMP-500) { delay(5); }
 	open();
 	delay(100);
-	setLiftTarget(-1);
-	while(!SensorValue[liftStop]) { delay(5); }
+	//setLiftTarget(-1);
+	//while(!SensorValue[liftStop]) { delay(5); }
 	for(int i = 0;  i<2; i++) {
 		addDrivebaseTargetPIDAuto(db, 36);
 		delay(200);
@@ -254,6 +254,26 @@ void programmingSkils () {
 		setLiftTarget(LIFT_DOWN);
 		while(SensorValue[liftPot]>LIFT_SLOW) { delay(5); }
 	}
+	addGyroTargetPIDAutoPointTurn(g, 80);
+	setLiftTarget(LIFT_DOWN);
+	while(!SensorValue[liftStop]) { delay(5); }
+	addGyroTargetPIDAutoPointTurn(g, -70);
+	addDrivebaseTargetPIDAuto(db, 35);
+	addGyroTargetPIDAutoPointTurn(g, -90);
+	addGyroTargetPIDAutoLeftSwingTurn(g, 90);
+	addDrivebaseTargetPIDAuto(db, -5);
+	resetSensor(leftEnc);
+	resetSensor(rightEnc);
+	addDrivebaseTargetPIDAuto(db,  5);
+	delay(100);
+	close();
+	addDrivebaseTargetPIDAuto(db,  -50);
+	setWheelSpeed(-30);
+	setLiftTarget(LIFT_DUMP);
+	delay(700);
+	setWheelSpeed(-30);
+	while(SensorValue[liftPot]<LIFT_DUMP-500) { delay(5); }
+	open();
 }
 
 task autonomous () {
