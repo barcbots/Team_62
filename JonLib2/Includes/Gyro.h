@@ -6,6 +6,7 @@ int gyroCurve (int target);
 typedef struct {
 	pid controller;
 	tSensors sensor;
+	int maxSpeed;
 } gyroscope;
 
 void initPIDGyroscope (gyroscope *gyroController, tSensors sensor, float kP,  float kI, float kD, int threshold = 10, int integralLimit = -1, int slewRate = 10) {
@@ -25,7 +26,7 @@ bool leftSwingTurnGyroPID (gyroscope *gyroController) {
 	setRightWheelSpeed(0);
 
 	do {
-		setLeftWheelSpeed(-updatePIDController(controller, gyroController->sensor));
+		setLeftWheelSpeed(limit(-updatePIDController(controller, gyroController->sensor), gyroController->maxSpeed);
 
 		if(abs(controller->error)<=(abs(lastError)-5))
 			lastUpdate = nPgmTime;
@@ -63,7 +64,7 @@ pid *controller = gyroController->controller;
 	setLeftWheelSpeed(0);
 
 	do {
-		setRightWheelSpeed(updatePIDController(controller, gyroController->sensor));
+		setRightWheelSpeed(limit(updatePIDController(controller, gyroController->sensor), gyroController->maxSpeed);
 
 		if(abs(controller->error)<=(abs(lastError)-5))
 			lastUpdate = nPgmTime;
@@ -99,7 +100,7 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 	writeDebugStream("INTENDED: (%d) ", controller->target);
 
 	do {
-		spin(updatePIDController(controller, gyroController->sensor));
+		spin(limit(updatePIDController(controller, gyroController->sensor), gyroController->maxSpeed));
 
 		if(abs(controller->error)<=(abs(lastError)-5))
 			lastUpdate = nPgmTime;
@@ -126,44 +127,46 @@ bool pointTurnGyroPID (gyroscope *gyroController) {
 	return true;
 }
 
-void setGyroTargetPID (gyroscope *gyroController, float target) {
+void setGyroTargetPID (gyroscope *gyroController, float target, int maxSpeed = 127) {
+	gyroController->maxSpeed = maxSpeed;
 	pid *controller = gyroController->controller;
 	clearIntegral(controller);
 	controller->target = gyroCurve(target);
 }
 
-void setGyroTargetPIDAutoPointTurn (gyroscope *gyroController, float target) {
-	setGyroTargetPID(gyroController, target);
+void setGyroTargetPIDAutoPointTurn (gyroscope *gyroController, float target, int maxSpeed = 127) {
+	setGyroTargetPID(gyroController, target, maxSpeed);
 	pointTurnGyroPID(gyroController);
 }
 
-void setGyroTargetPIDAutoRightSwingTurn (gyroscope *gyroController, float target) {
-	setGyroTargetPID(gyroController, target);
+void setGyroTargetPIDAutoRightSwingTurn (gyroscope *gyroController, float target, int maxSpeed = 127) {
+	setGyroTargetPID(gyroController, target, maxSpeed);
 	rightSwingTurnGyroPID(gyroController);
 }
 
-void setGyroTargetPIDAutoLeftSwingTurn (gyroscope *gyroController, float target) {
-	setGyroTargetPID(gyroController, target);
+void setGyroTargetPIDAutoLeftSwingTurn (gyroscope *gyroController, float target, int maxSpeed = 127) {
+	setGyroTargetPID(gyroController, target, maxSpeed);
 	leftSwingTurnGyroPID(gyroController);
 }
 
-void addGyroTargetPID (gyroscope *gyroController, float target) {
+void addGyroTargetPID (gyroscope *gyroController, float target, int maxSpeed = 127) {
+	gyroController->maxSpeed = maxSpeed;
 	pid *controller = gyroController->controller;
 	clearIntegral(controller);
 	controller->target = controller->target + gyroCurve(target);
 }
 
-void addGyroTargetPIDAutoPointTurn (gyroscope *gyroController, float target) {
-	addGyroTargetPID(gyroController, target);
+void addGyroTargetPIDAutoPointTurn (gyroscope *gyroController, float target, int maxSpeed = 127) {
+	addGyroTargetPID(gyroController, target, maxSpeed);
 	pointTurnGyroPID(gyroController);
 }
 
-void addGyroTargetPIDAutoRightSwingTurn (gyroscope *gyroController, float target) {
-	addGyroTargetPID(gyroController, target);
+void addGyroTargetPIDAutoRightSwingTurn (gyroscope *gyroController, float target, int maxSpeed = 127) {
+	addGyroTargetPID(gyroController, target, maxSpeed);
 	rightSwingTurnGyroPID(gyroController);
 }
 
-void addGyroTargetPIDAutoLeftSwingTurn (gyroscope *gyroController, float target) {
-	addGyroTargetPID(gyroController, target);
+void addGyroTargetPIDAutoLeftSwingTurn (gyroscope *gyroController, float target, int maxSpeed = 127) {
+	addGyroTargetPID(gyroController, target, maxSpeed);
 	leftSwingTurnGyroPID(gyroController);
 }
