@@ -26,7 +26,7 @@ bool leftSwingTurnGyroPID (gyroscope *gyroController) {
 	setRightWheelSpeed(0);
 
 	do {
-		setLeftWheelSpeed(limit(-updatePIDController(controller, gyroController->sensor), gyroController->maxSpeed);
+		setLeftWheelSpeed(limit(-updatePIDController(controller, gyroController->sensor), gyroController->maxSpeed));
 
 		if(abs(controller->error)<=(abs(lastError)-5))
 			lastUpdate = nPgmTime;
@@ -64,7 +64,7 @@ pid *controller = gyroController->controller;
 	setLeftWheelSpeed(0);
 
 	do {
-		setRightWheelSpeed(limit(updatePIDController(controller, gyroController->sensor), gyroController->maxSpeed);
+		setRightWheelSpeed(limit(updatePIDController(controller, gyroController->sensor), gyroController->maxSpeed));
 
 		if(abs(controller->error)<=(abs(lastError)-5))
 			lastUpdate = nPgmTime;

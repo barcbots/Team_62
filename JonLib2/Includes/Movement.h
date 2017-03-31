@@ -97,11 +97,11 @@ bool drivebasePIDAuto(drivebase *controller, bool useGyro) {
 			);
 		}
 
-		if(abs(left->error)<=(abs(lastLeftError)-5)){
+		if(abs(left->error)<(abs(lastLeftError))){
 			lastUpdate = nPgmTime;
 		}
 
-		if(abs(right->error)<=(abs(lastRightError)-5)){
+		if(abs(right->error)<(abs(lastRightError))){
 			lastUpdate = nPgmTime;
 		}
 

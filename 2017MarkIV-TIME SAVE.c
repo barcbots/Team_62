@@ -126,7 +126,7 @@ void open () {
 	SensorValue[leftClaw] = 1;
 }
 
-#define LIFT_RAISE 1950
+#define LIFT_RAISE 2000
 #define LIFT_DUMP 3000
 #define LIFT_SLOW 2200
 #define LIFT_DOWN -1
@@ -143,7 +143,7 @@ task autoMoveLift () {
 				lift(limit(-80,SensorValue[liftPot]>LIFT_SLOW?127:60));
 				delay(5);
 			}
-			lift(0);
+			lift(-10);
 		} else if (liftTarget == LIFT_DUMP) {
 			delay(liftDelay);
 			liftDelay = 0;
@@ -153,7 +153,7 @@ task autoMoveLift () {
 			open();
 			delay(200);
 		} else {
-			lift(limit((liftTarget-SensorValue[liftPot])*0.25,SensorValue[liftPot]>LIFT_SLOW?127:60));
+			lift(limit((liftTarget-SensorValue[liftPot])*0.16,SensorValue[liftPot]>LIFT_SLOW?127:60));
 		}
 		delay(25);
 	}
@@ -234,17 +234,61 @@ task dab () {
 
 	int startEnc = SensorValue[rightEnc];
 
-	int[3][3] values = [[enc1, open, close],
-	[enc2, open, open],
-	[enc3, close, close]];
+	int values[3][3] = {{300, 1, 0},
+	{900, 1, 1},
+	{1500, 0, 0}};
 
 	for(int i = 0; i<3; i++) {
-		while(SensorValue[rightEnc]+startEnc<values[i][1]) { delay(5); }
-		SensorValue[leftClaw] = values[i][2];
-		SensorValue[rightClaw] = values[i][3];
+		//writeDebugStreamLine("EXPECTED: %d, LEFT: %d, RIGHT %d", startEnc+values[i][0], values[i][1], values[i][2]);
+		while(SensorValue[rightEnc]<values[i][0]+startEnc) { delay(5); }
+		SensorValue[leftClaw] = values[i][1];
+		SensorValue[rightClaw] = values[i][2];
 	}
+	setLiftTarget(LIFT_RAISE+100);
 }
 
+void autoLift() {
+	////lift, after being up against walls
+	//apply pressure  to walls
+	//lift with 70 power
+	//wait to lifit in to pipe
+	//lift with pos 30 power
+	//give full 127 forward
+	//give 0 lift power
+	//delay(100);
+	//start to increment lift power from  0 to -127, 10 power for each 100/th of a  second
+	setWheelSpeed(-30);
+	lift(30);
+	delay(200);
+	int lastLiftPotValue;
+	do {
+		lastLiftPotValue = SensorValue[liftPot];
+		delay(200);
+	} while(SensorValue[liftPot]>lastLiftPotValue);
+	lift(0);
+	setWheelSpeed(127);
+	delay(100);
+	lift(0);
+	delay(100);
+	int liftPower = -30;
+	while(liftPower>-127) {
+		lift(liftPower);
+		liftPower = limit(liftPower-10, 127);
+		delay(75); //COULD MOVE DOWN TO 50
+	}
+	lift(-127);
+	delay(500);
+	setWheelSpeed(0);
+	while(!SensorValue[liftStop]) { delay(5); }
+	lift(-70);
+	while(motor[leftLift1]<20) {
+		lift(motor[leftLift1]+10);
+		delay(75);
+	}
+	lift(0);
+}
+
+drivebase db;
 void programmingSkils () {
 	startTask(autoMoveLift);
 
@@ -256,7 +300,6 @@ void programmingSkils () {
 	clearDebugStream();
 
 	gyroscope g;
-	drivebase db;
 	gyroscope gLoad;
 	drivebase dbLoad;
 	initPIDGyroscope(g, gyro, 0.25, 0.0001, 1.5, 30, -1, 40);
@@ -264,118 +307,193 @@ void programmingSkils () {
 	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.15, 0.0001, 0.7, 30, -1, 20, 0.3);
 	initPIDDrivebase(dbLoad, leftEnc, rightEnc, gyro, 0.8, 0.0001, 0.7, 30, -1, 20, 0.3);
 
-	open();
+//	open();
 
-	//delay(400);
+//	delay(400);
 
-	//addDrivebaseTargetPIDAuto(db, 43);
+//	addDrivebaseTargetPIDAuto(db, 43);
 
-	//close();
+//	close();
+//	/*setWheelSpeed(127);
+//	delay(350);
+//	setLiftTarget(LIFT_RAISE);
+//	delay(200);
+//	setWheelSpeed(0);
+//	delay(150);
+//	setDrivebaseTargetPIDAuto(db, 12, 11);
+//*/
+//	setWheelSpeed(127);
+//	delay(550);
+//	setLiftTarget(LIFT_RAISE);
+//	delay(150);
+//	setWheelSpeed(0);
+//	delay(100);
+//	setDrivebaseTargetPIDAuto(db, 10, 5);
 
-	//addDrivebaseTargetPIDAuto(db, 24);
+//	setGyroTargetPIDAutoRightSwingTurn(gLoad, 90);
+//	resetSensor(leftEnc);
+//	resetSensor(rightEnc);
+//	addDrivebaseTargetPIDAuto(dbLoad,  -41);
+//	setLiftTarget(LIFT_DUMP);
+//	while(!SensorValue[leftClaw]) { delay(5); }
+//	setWheelSpeed(-30);
 
-	//delay(500);
-	//setLiftTarget(LIFT_RAISE);
-	//setDrivebaseTargetPIDAuto(db, 12, 11);
+//	liftDelay = 0;
+//	liftTarget = -1;
+//	delay(300);
+//	resetSensor(leftEnc);
+//	resetSensor(rightEnc);
 
-	//setGyroTargetPIDAutoRightSwingTurn(gLoad, 90);
-	//delay(300);
-	//resetSensor(leftEnc);
-	//resetSensor(rightEnc);
-	//setLiftTarget(LIFT_DUMP, 800);
-	//addDrivebaseTargetPIDAuto(dbLoad,  -40);
-	//setWheelSpeed(-30);
-	//delay(300);
-	//liftDelay = 0;
-	//liftTarget = -1;
-	//delay(500);
-	//resetSensor(leftEnc);
-	//resetSensor(rightEnc);
+//	addDrivebaseTargetPIDAuto(db, 32,37);
+//	delay(200);
+//	close();
+//	setLiftTarget(LIFT_RAISE);
+//	addDrivebaseTargetPIDAuto(db,  -44);
+//	setLiftTarget(LIFT_DUMP);
+//	while(!SensorValue[leftClaw]) { delay(5); }
+//	setWheelSpeed(-30);
+//	delay(100);
 
-	//addDrivebaseTargetPIDAuto(db, 30);
-	//delay(200);
-	//close();
-	//setLiftTarget(LIFT_DUMP, 1000);
-	//addDrivebaseTargetPIDAuto(db,  -45);
-	//setWheelSpeed(-30);
-	//delay(100);
+//	resetSensor(gyro);
+//	setLiftTarget(-1, 0);
+//	while(!SensorValue[liftPot]>LIFT_RAISE) {
+//		liftDelay = 0;
+//		liftTarget = -1;
+//		delay(5);
+//	}
+//	addGyroTargetPIDAutoPointTurn(g, 80);
+//	delay(500);
+//	rightClose();
+//	setGyroTargetPIDAutoPointTurn(g, 8);
+//	rightOpen();
+//	delay(300);
+//	resetSensor(leftEnc);
+//	resetSensor(rightEnc);
+//	addDrivebaseTargetPIDAuto(db, 42);
+//	delay(500);
+//	close();
+//	setLiftTarget(LIFT_RAISE);
+//	addDrivebaseTargetPIDAuto(db, -60, -40);
+//	setWheelSpeed(-30);
+//	setLiftTarget(LIFT_DUMP);
+//	delay(700);
+//	setWheelSpeed(-30);
+//	delay(300);
 
-	//resetSensor(gyro);
-	//setLiftTarget(-1, 0);
-	//while(!SensorValue[liftPot]>LIFT_RAISE) {
-	//	liftDelay = 0;
-	//	liftTarget = -1;
-	//	delay(5);
-	//}
-	//addGyroTargetPIDAutoPointTurn(g, 80);
-	//rightClose();
-	//addGyroTargetPIDAutoRightSwingTurn(g, -100);
-	//rightOpen();
-	//resetSensor(leftEnc);
-	//resetSensor(rightEnc);
-	//addDrivebaseTargetPIDAuto(db, 32);
-	//delay(500);
-	//close();
-	//setLiftTarget(LIFT_RAISE);
-	//addDrivebaseTargetPIDAuto(db, -60);
-	//setWheelSpeed(-30);
-	//setLiftTarget(LIFT_DUMP);
-	//delay(700);
-	//setWheelSpeed(-30);
-	//delay(300);
+//	//threestars close + cube
+//	setLiftTarget(-1, 0);
+//	delay(400);
+//	leftClose();
+//	while(!SensorValue[liftStop]) { delay(5); }
+//	setWheelSpeed(0);
+//	resetSensor(gyro);
+//	resetSensor(leftEnc);
+//	resetSensor(rightEnc);
+//	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.15, 0.0001, 0.7, 30, -1, 20, 0.3);
+//	addGyroTargetPIDAutoRightSwingTurn(g, -60);
+//	addGyroTargetPIDAutoLeftSwingTurn(g,  -45);
+//	setWheelSpeed(-60);
+//	delay(800);
+//	setWheelSpeed(-30);
+//	delay(700);
+//	startTask(dab);
+//	resetSensor(gyro);
+//	delay(200);
+//	addDrivebaseTargetPIDAuto(db, 49);
+//	close();
+//	setLiftTarget(LIFT_RAISE+100);
+//	delay(500);
+//	setGyroTargetPIDAutoRightSwingTurn(g, 90);
+//	setWheelSpeed(-70);
+//	setLiftTarget(LIFT_DUMP);
+//	delay(700);
+//	setLiftTarget(LIFT_DOWN);
+//	delay(200);
+//	while(!SensorValue[liftStop]) { delay(5); } //consider adding timeout function in case star prevents limit switch being hit
+//	addDrivebaseTargetPIDAuto(db, 1);
+//	delay(100);
+//	close();
+//	setLiftTarget(LIFT_RAISE);
+//	setWheelSpeed(-127);
+//	delay(400);
+//	setLiftTarget(LIFT_DUMP);
+//	setWheelSpeed(-30);
+//	delay(700);
 
-	//threestars close + cube
-	resetSensor(gyro);
-	setLiftTarget(-1, 0);
-	leftClose();
-	while(!SensorValue[liftStop]) { delay(5); }
+//	//twostar
+//	setLiftTarget(LIFT_DOWN);
+//	while(!SensorValue[liftStop]) { delay(5); }
+//	initPIDGyroscope(g, gyro, 0.25, 0.0001, 1.5, 30, -1, 40);
+//	resetSensor(gyro);
+//	addGyroTargetPIDAutoRightSwingTurn(g, -65);
+//	addGyroTargetPIDAutoLeftSwingTurn(g,  -35);
+//	delay(300);
+//	resetSensor(leftEnc);
+//	resetSensor(rightEnc);
+//	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.15, 0.0001, 0.7, 30, -1, 20, 0.3);
+//	addDrivebaseTargetPIDAuto(db, 35);
+//	leftClose();
+//	addGyroTargetPIDAutoLeftSwingTurn(g, 40);
+//	open();
+//	addGyroTargetPIDAutoLeftSwingTurn(g, 63);
+//	resetSensor(leftEnc);
+//	resetSensor(rightEnc);
+//	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.15, 0.0001, 0.7, 30, -1, 20, 0.3);
+//	addDrivebaseTargetPIDAuto(db, 30);
+//	delay(500);
+//	close();
+//	setLiftTarget(LIFT_RAISE);
+//	delay(100);
+//	resetSensor(leftEnc);
+//	resetSensor(rightEnc);
+//	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.15, 0.0001, 0.7, 30, -1, 20, 0.3);
+//	addDrivebaseTargetPIDAuto(db, -40);
+//	setWheelSpeed(-30);
+//	setLiftTarget(LIFT_DUMP);
+	delay(700);
+	setWheelSpeed(-30);
+	delay(500);
 	setWheelSpeed(0);
-	addGyroTargetPIDAutoRightSwingTurn(g, -60);
-	addGyroTargetPIDAutoLeftSwingTurn(g,  -40);
+	delay(100);
+	lift(-127);
+	delay(500);
+	lift(0);
+
+	//movetolift
 	resetSensor(leftEnc);
 	resetSensor(rightEnc);
-	addDrivebaseTargetPIDAuto(db, -35);
-	addDrivebaseTargetPIDAuto(db, 27);
-	startTask(dab);
-	leftOpen();
-	rightClose();
-	addDrivebaseTargetPIDAuto(db, 25);
-	open();
-	addDrivebaseTargetPIDAuto(db, 35);
-	close();
-	setLiftTarget(LIFT_RAISE);
+	initPIDDrivebase(db, leftEnc, rightEnc, gyro, 0.15, 0.0001, 0.7, 30, -1, 20, 0.3);
+	addDrivebaseTargetPIDAuto(db, 38, 50);
+	setWheelSpeed(30);
 	delay(500);
-	setGyroTargetPIDAutoRightSwingTurn(g, 0);
-	setWheelSpeed(-30);
-	setLiftTarget(LIFT_DUMP);
-	delay(700);
-	setLiftTarget(LIFT_DOWN);
-	while(!SensorValue[liftStop]) { delay(5); } //consider adding timeout function in case star prevents limit switch being hit
-	delay(100);
-	close();
+	resetSensor(gyro);
+	setWheelSpeed(0);
 	delay(200);
-	setWheelSpeed(-30);
-	setLiftTarget(LIFT_DUMP);
-	delay(700);
+	addDrivebaseTargetPIDAuto(db, -1);
+	addGyroTargetPIDAutoRightSwingTurn(g, 90+45, 50);
 
-	//twostar
 }
 
 task autonomous () {
-	//startTask(autoMoveLift);
+	stopTask(liftInches);
+	startTask(autoMoveLift);
 	//setLiftTarget(LIFT_DOWN);
 	//autonomousTest();
+
 	programmingSkils();
 }
 
 void usercontrolMain () {
-	startTask(liftInches);
+	stopTask(autoMoveLift);
+	//startTask(liftInches);
+	int power8u = -40;
 	while(true) {
 		tankDrive(vexRT[Ch3], vexRT[Ch2], 15);
 
 		if(vexRT[Btn8U]) {
 			runLiftInches = false;
-			lift(-127);
+			lift(power8u);
+			power8u=limit(power8u-10,127);
 		} else if(vexRT[Btn5U]) {
 			runLiftInches  = false;
 			lift(127);
@@ -387,6 +505,11 @@ void usercontrolMain () {
 				lift(-40);
 			else
 				lift(-80);
+		}
+		else if(vexRT[Btn7U]) {
+			lift(20);
+		} else if(vexRT[Btn7D]) {
+			lift(-40);
 		}
 		else if(SensorValue[liftStop] && ((abs(vexRT[Ch3])+abs(vexRT[Ch2])>15))) { //hold down code
 			lift(-15);
@@ -403,17 +526,24 @@ void usercontrolMain () {
 				lift(0);
 		}
 
-		if(vexRT[Btn7U]) {
-			liftInchesTarget = LIFT_PIPE_UP;
-			runLiftInches = true;
-			while(vexRT[Btn7U]) { delay(5); }
+		if(!vexRT[Btn8U]){
+			power8u = -40;
 		}
 
-		if(vexRT[Btn7D]) {
-			liftInchesTarget = LIFT_PIPE_DOWN;
-			runLiftInches = true;
-			while(vexRT[Btn7D]) { delay(5); }
-		}
+		if(vexRT[Btn8L])
+			autoLift();
+
+		//if(vexRT[Btn7U]) {
+		//	liftInchesTarget = LIFT_PIPE_UP;
+		//	runLiftInches = true;
+		//	while(vexRT[Btn7U]) { delay(5); }
+		//}
+
+		//if(vexRT[Btn7D]) {
+		//	liftInchesTarget = LIFT_PIPE_DOWN;
+		//	runLiftInches = true;
+		//	while(vexRT[Btn7D]) { delay(5); }
+		//}
 
 		if(vexRT[Btn6U]) {
 			if(SensorValue[leftClaw])
